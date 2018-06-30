@@ -115,7 +115,9 @@ def scrape(sessionName):
             'time' : time,
             'status' : status,
             'location' : location,
-            'faculty' : name,
+            'facultyFirst' : name,
+            'facultyLast' : name,
+            'facultyMI' : name,
             'description' : desc,
             'prereq' : ''
         }
