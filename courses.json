@@ -1,0 +1,70 @@
+{
+	"info":[
+		{
+			"PutRequest":{
+				"Item":{
+					"classNum": {"N": "51039"},
+					"section": {"N": "6380"},
+					"subj": {"S": "CMSC"},
+					"num": {"N": "150"},
+					"title": {"S": "Introduction to Discrete Structures"},
+					"credits": {"N": "3"},
+					"startDate": {"S": "21-May-18"},
+					"endDate":{"S":"15-Jul-18"},
+					"day": {"S": "Monday"},
+					"time": {"S": "15:12:34"},
+					"status": {"S": "Open"},
+					"location": {"S": "Online"},
+					"facultyLast": {"S": "Shash"},
+					"facultyFirst": {"S": "Abdulnasir"},
+					"facultyMI": {"S": "M"},
+					"description": {"S": "Prerequisite or corequisite: MATH 140. A survey of fundamental mathematical concepts relevant to computer science. The objective is to address problems in computer science. Proof techniques presented are those used for modeling and solving problems in computer science. Discussion covers functions, relations, infinite sets, and propositional logic. Topics also include graphs and trees, as well as selected applications. Students may receive credit for only one of the following courses: CMSC 150 or CMSC 250."}
+		}
+	}
+},
+{
+			"PutRequest":{
+				"Item":{
+					"classNum": {"N": "51439"},
+					"section": {"N": "6381"},
+					"subj": {"S": "CMSC"},
+					"num": {"N": "150"},
+					"title": {"S": "Introduction to Discrete Structures"},
+					"credits": {"N": "3"},
+					"startDate": {"S": "21-May-18"},
+					"endDate": {"S": "15-Jul-18"},
+					"day": {"S": "Tuesday"},
+					"time": {"S": "15:05:34"},
+					"status": {"S": "Open"},
+					"location": {"S": "Online"},
+					"facultyLast": {"S": "Potolea"},
+					"facultyFirst": {"S": "Rodicia"},
+					"facultyMI": {"S": "A"},
+					"description": {"S": "Prerequisite or corequisite: MATH 140. A survey of fundamental mathematical concepts relevant to computer science. The objective is to address problems in computer science. Proof techniques presented are those used for modeling and solving problems in computer science. Discussion covers functions, relations, infinite sets, and propositional logic. Topics also include graphs and trees, as well as selected applications. Students may receive credit for only one of the following courses: CMSC 150 or CMSC 250."}
+			}
+		}
+},
+{
+			"PutRequest":{
+				"Item":{
+					"classNum": {"N": "51037"},
+					"section": {"N": "6380"},
+					"subj": {"S": "CMSC"},
+					"num": {"N": "330"},
+					"title": {"S": "Advanced Programming Languages"},
+					"credits": {"N": "3"},
+					"startDate": {"S": "21-May-18"},
+					"endDate": {"S": "15-Jul-18"},
+					"day": {"S": "Friday"},
+					"time": {"S": "16:12:34"},
+					"status": {"S": "Open"},
+					"location": {"S": "Online"},
+					"facultyLast": {"S": "Elm"},
+					"facultyFirst": {"S": "Michael"},
+					"facultyMI": {"S": "A"},
+					"description": {"S": "Prerequisite: CMSC 230 or CMSC 350. A comparative study of programming languages. The aim is to write safe and secure computer programs. Topics include the syntax and semantics of programming languages and run-time support required for various programming languages. Programming projects using selected languages are required."}			
+				}
+			}
+		}
+	]
+}

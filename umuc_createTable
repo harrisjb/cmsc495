@@ -1,0 +1,7 @@
+aws dynamodb create-table \
+    --table-name info \
+    --attribute-definitions \
+        AttributeName=classNum,AttributeType=N \
+        AttributeName=section,AttributeType=N \
+    --key-schema AttributeName=classNum,KeyType=HASH AttributeName=section,KeyType=RANGE \
+    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
