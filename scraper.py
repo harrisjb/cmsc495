@@ -1,8 +1,8 @@
 """
 Filename: scraper.py
 Author: Dave Springer
-Date: July 1, 2018
-Current Version: 0.1.6
+Date: July 8, 2018
+Current Version: 0.2.3
 Description: This file contains functions to identify available sessions and to
 scrape course data for a specified session.  Creates a JSON file holding the
 course information in a format that can be understood by the database importer.
