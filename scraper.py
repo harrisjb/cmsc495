@@ -268,7 +268,7 @@ def __testOutput(sessionName, subject = ''):
 
     print('\nScraping course data...\n')
 
-    scrape(sessionName, subject, True)
+    scrape(sessionName, subject, False)
 
     print('Done!')
 
@@ -281,4 +281,4 @@ def __testOutput(sessionName, subject = ''):
     #print(json.dumps(data, indent=4))
 
 # Test that all functions are working as expected
-__testOutput('2018 Fall', 'CMSC')
+#__testOutput('2018 Fall', 'CMSC')
