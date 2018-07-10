@@ -2,13 +2,20 @@
 Filename: scraper.py
 Author: Dave Springer
 Date: July 9, 2018
-Current Version: 0.3.2
+Current Version: 1.0.0
 Description: This file contains functions to identify available sessions and to
 scrape course data for a specified session.  Creates a JSON file holding the
 course information in a format that can be understood by the database importer.
 
 Revision History:
 #       Date        By          Description
+1.0.0   07/09/2018  Springer    Commented out calls to testing functions
+0.3.5   07/09/2018  Springer    Added function call for the database importer to
+                                add courses once they have been scraped
+0.3.4   07/09/2018  Springer    Fixed an error where only even-number course
+                                rows were being scraped
+0.3.3   07/09/2018  Springer    Added a getSubjects function that returns all
+                                subjects available on schedule
 0.3.2   07/09/2018  Springer    Added exception handling for bad web connection
 0.3.1   07/09/2018  Springer    Added subject parameter to scrape function to
                                 filter results
@@ -45,6 +52,7 @@ from urllib.error import URLError
 from bs4 import BeautifulSoup
 import re
 import json
+import courses
 
 __sessions = {}
 __baseURL = 'http://webapps.umuc.edu/soc/us.cfm'
@@ -58,11 +66,9 @@ def getSessions():
     """
     global __sessions
 
-    # Open URL and create a BeautifulSoup object
-    html = urlopen(__baseURL)
-
     try:
-
+        # Open URL and create a BeautifulSoup object
+        html = urlopen(__baseURL)
         bs = BeautifulSoup(html.read(), 'html.parser')
     except HTTPError as e:
         print(e)
@@ -99,7 +105,25 @@ def getSessions():
 
     return list(__sessions.keys())
 
-def scrape(sessionName, subject = ''):
+def getSubjects():
+    """
+    Can be called to scrape all available subjects from the schedule page
+    :return:
+    """
+    try:
+        # Open URL and create a BeautifulSoup object
+        html = urlopen(__baseURL)
+        bs = BeautifulSoup(html.read(), 'html.parser')
+    except HTTPError as e:
+        print(e)
+    except URLError as e:
+        print('The server could not be found!')
+    else:
+        subjects = bs.find('select', {'id':'soc-subject2'}).find_all('option')
+        return [s.get('value') for s in subjects if s.get('value') != '']
+
+
+def scrape(sessionName, subject = '', callDatabase=True):
 
     # Get session ID from the name and open URL of schedule for this session
     sessionID = __sessions[sessionName]
@@ -116,102 +140,113 @@ def scrape(sessionName, subject = ''):
     else:
         bs = BeautifulSoup(html.read(), 'html.parser')
 
-        courses = []
+        courseList = []
 
-        # Get each attribute for each course
-        for course in bs.tbody.find_all('tr', {
-            'class': 'soc-course soc-highlight-border soc-highlight-border-even'}):
-            idCell = course.find('td', {'headers': 'soc-hd-course'})
+        # Even rows are id'ed differently than odd, so must scrape both
+        rows = ('soc-course soc-highlight-border soc-highlight-border-even',
+                'soc-course soc-highlight-border ')
+        for row in rows:
+            # Get each attribute for each course
+            for course in bs.tbody.find_all('tr', {
+                'class': row}):
+                idCell = course.find('td', {'headers': 'soc-hd-course'})
 
-            # Get course ID, consisting of the subject code and the 3-digit ID
-            cID = idCell.find('span',{'class':'soc-course-id'}).get_text().split()
-            subj = cID[0]
-            id = cID[1]
+                # Get course ID, consisting of the subject code and the 3-digit ID
+                cID = idCell.find('span',
+                                  {'class': 'soc-course-id'}).get_text().split()
+                subj = cID[0]
+                id = cID[1]
 
-            # Title and credits come from the same cell
-            titleCell = idCell.next_sibling.next_sibling
-            title = titleCell.get_text()[:-4]
-            numCredits = titleCell.get_text()[-2]
+                # Title and credits come from the same cell
+                titleCell = idCell.next_sibling.next_sibling
+                title = titleCell.get_text()[:-4]
+                numCredits = titleCell.get_text()[-2]
 
-            # Row 2: Description, with any prerequisites embedded
-            row2 = course.next_sibling.next_sibling
-            desc = row2.get_text()[1:]
+                # Row 2: Description, with any prerequisites embedded
+                row2 = course.next_sibling.next_sibling
+                desc = row2.get_text()[1:]
 
-            # Extract prerequisites from description
-            match = re.match('(.*?)Prereq.*?: (.*?)\. (.*)', desc)
-            if match:
-                prereq = match.group(2)
-                description = match.group(1) + match.group(3)
-            else:
-                prereq = 'None'
-                description = desc
+                # Extract prerequisites from description
+                match = re.match('(.*?)Prereq.*?: (.*?)\. (.*)', desc)
+                if match:
+                    prereq = match.group(2)
+                    description = match.group(1) + match.group(3)
+                else:
+                    prereq = 'None'
+                    description = desc
 
-            # Row 3: Class No., Section, Start/End, Day/Time, Status, Location
-            row3 = row2.next_sibling.next_sibling
-            classNum = row3.find('td', {'headers':'soc-hd-class'}).get_text()
-            section = row3.find('td', {'headers':'soc-hd-goarmyed'}).get_text()
-            dates = row3.find('td', {'headers': 'soc-hd-date'})
-            day = row3.find('td', {'headers': 'soc-hd-day'}).get_text()
-            time = row3.find('td', {'headers': 'soc-hd-time'}).get_text()
-            status = row3.find('td', {'headers': 'soc-hd-status'}).get_text()
-            loc = row3.find('td', {'headers': 'soc-hd-location'}).get_text()
+                # Row 3: Class No., Section, Start/End, Day/Time, Status, Location
+                row3 = row2.next_sibling.next_sibling
+                classNum = row3.find('td', {'headers': 'soc-hd-class'}).get_text()
+                section = row3.find('td', {'headers': 'soc-hd-goarmyed'}).get_text()
+                dates = row3.find('td', {'headers': 'soc-hd-date'})
+                day = row3.find('td', {'headers': 'soc-hd-day'}).get_text()
+                time = row3.find('td', {'headers': 'soc-hd-time'}).get_text()
+                status = row3.find('td', {'headers': 'soc-hd-status'}).get_text()
+                loc = row3.find('td', {'headers': 'soc-hd-location'}).get_text()
 
-            # Handle empty string values for day and time
-            if day == '':
-                day = 'None'
-            if time == '':
-                time = 'None'
+                # Handle empty string values for day and time
+                if day == '':
+                    day = 'None'
+                if time == '':
+                    time = 'None'
 
-            # Format location for in-person classes (keep online as is)
-            if loc == 'Online':
-                location = loc
-            else:
-                location = loc.split('-')[0]
+                # Format location for in-person classes (keep online as is)
+                if loc == 'Online':
+                    location = loc
+                else:
+                    location = loc.split('-')[0]
 
-            # Get start/end dates from dates string
-            dates = dates.get_text().split('-')
-            start = dates[0]
-            end = dates[1]
+                # Get start/end dates from dates string
+                dates = dates.get_text().split('-')
+                start = dates[0]
+                end = dates[1]
 
-            # Row 4: Faculty information
-            row4 = row3.next_sibling.next_sibling
-            name = row4.find('td', {'colspan':'3'}).get_text()
-            name = name[9:] # Strip "Faculty" header
-            names = name.split(', ')
-            if len(names) > 1: # Only if there is a faculty member listed
-                last = names[0]
-                first = names[1].split(' ')[0]
-            else: # Otherwise, use default values
-                last = 'None'
-                first = 'None'
+                # Row 4: Faculty information
+                row4 = row3.next_sibling.next_sibling
+                name = row4.find('td', {'colspan': '3'}).get_text()
+                name = name[9:]  # Strip "Faculty" header
+                names = name.split(', ')
+                if len(names) > 1:  # Only if there is a faculty member listed
+                    last = names[0]
+                    first = names[1].split(' ')[0]
+                else:  # Otherwise, use default values
+                    last = 'None'
+                    first = 'None'
 
-            # Make dictionary for course information
-            info = {
-                'subj' : subj,
-                'num' : id,
-                'title' : title,
-                'credits' : int(numCredits),
-                'classNum' : int(classNum),
-                'section' : int(section),
-                'startDate' : start,
-                'endDate' : end,
-                'day' : day,
-                'time' : time,
-                'status' : status,
-                'location' : location,
-                'facultyFirst' : first,
-                'facultyLast' : last,
-                'description' : description,
-                'prereq' : prereq
-            }
+                # Make dictionary for course information
+                info = {
+                    'subj': subj,
+                    'num': id,
+                    'title': title,
+                    'credits': int(numCredits),
+                    'classNum': int(classNum),
+                    'section': int(section),
+                    'startDate': start,
+                    'endDate': end,
+                    'day': day,
+                    'time': time,
+                    'status': status,
+                    'location': location,
+                    'facultyFirst': first,
+                    'facultyLast': last,
+                    'description': description,
+                    'prereq': prereq
+                }
 
-            courses.append(info)
+                courseList.append(info)
+
 
         # Build a dictionary with key, 'courses', whose value is the courses list
-        data = {'courses': courses}
+        data = {'courses': courseList}
 
         # Write data as json file
         json.dump(data, fp=open('courses.json', 'w'), indent=4)
+
+        print(len(data['courses']))
+
+    if callDatabase:
+        courses.update()
 
 
 def __testOutput(sessionName, subject = ''):
@@ -220,14 +255,20 @@ def __testOutput(sessionName, subject = ''):
     """
     getSessions()
 
+    # List all available subjects
+    subjects = getSubjects()
+    print('==== Subjects ====')
+    for subj in subjects:
+        print(subj)
+
     # List available sessions and their IDs
-    print('==== Sessions ====')
+    print('\n==== Sessions ====')
     for k, v in __sessions.items():
         print('%s (%s)' % (k, v))
 
     print('\nScraping course data...\n')
 
-    scrape(sessionName, subject)
+    scrape(sessionName, subject, True)
 
     print('Done!')
 
@@ -235,9 +276,9 @@ def __testOutput(sessionName, subject = ''):
     with open('courses.json', 'r') as file:
         data = json.load(file)
 
-    # Print JSON data (Note: may not print all due to size. Verify in file.)
+    # Print JSON data (Note: may not print all for larger JSONs. Verify file.)
+    #print('\n==== JSON Output ====')
     #print(json.dumps(data, indent=4))
-
 
 # Test that all functions are working as expected
 __testOutput('2018 Fall', 'CMSC')
