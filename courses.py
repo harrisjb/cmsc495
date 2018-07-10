@@ -1,7 +1,7 @@
 # Filename: courses.py
 # Author: Shawn R Moses
 # Date: July 9, 2018
-# Current Version: 1.3
+# Current Version: 1.4
 # Description: Import the JSON file course information to AWS Dynamodb table "info".
 
 import boto3
