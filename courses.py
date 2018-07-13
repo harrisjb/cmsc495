@@ -17,15 +17,24 @@ def __createTable():
         TableName='courses',
         KeySchema=[
             {
-                'AttributeName': 'classNum',
+                'AttributeName': 'subj',
                 'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'classNum',
+                'KeyType': 'RANGE'
             }
         ],
         AttributeDefinitions=[
             {
                 'AttributeName': 'classNum',
                 'AttributeType': 'N'
+            },
+            {
+                'AttributeName': 'subj',
+                'AttributeType': 'S'
             }
+
         ],
         ProvisionedThroughput={
             'ReadCapacityUnits': 1,
@@ -51,3 +60,8 @@ def update():
             for course in data['courses']:
                 print('Adding %s %s' % (course['subj'], course['num']))
                 batch.put_item(Item=course)
+
+
+
+
+update()
