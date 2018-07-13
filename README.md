@@ -18,3 +18,4 @@ SDK](https://github.com/alexa-labs/alexa-skills-kit-sdk-for-python)
 which remains in beta, in order to create the skill. 
 
 
+[Demo of the skill](https://www.youtube.com/watch?v=yr9jMEmBVPQ)
